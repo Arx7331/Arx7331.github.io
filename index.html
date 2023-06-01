@@ -40,6 +40,7 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       text-align: center;
+      margin-bottom: 20px; /* Added margin-bottom */
     }
     
     .profile-pic {
@@ -147,6 +148,10 @@
       font-size: 14px;
       margin-top: 20px;
     }
+    
+    .spotify-embed {
+      margin-top: 20px; /* Added margin-top */
+    }
   
   </style>
 </head>
@@ -172,7 +177,9 @@
       </div>
     </div>
     
-    <iframe src="https://open.spotify.com/embed/track/6hqb3fFdvhIizLtMHHA0xx" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    <div class="spotify-embed">
+      <iframe src="https://open.spotify.com/embed/track/6hqb3fFdvhIizLtMHHA0xx" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+    </div>
     
   </div>
 </body>
