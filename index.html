@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>.........</title>
+  <style>
+    @font-face {
+      font-family: 'PerfectDOS';
+      src: url('https://fauux.neocities.org/perfectdosvga437-webfont.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      font-family: 'PerfectDOS', monospace;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    /* Splash Screen */
+    #enterScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #d0aaff;
+      font-size: 3rem;
+      cursor: pointer;
+      user-select: none;
+      text-shadow: 0 0 10px #d0aaff;
+      animation: textFlicker 1.5s infinite alternate;
+      z-index: 1000;
+    }
+
+    /* Main content hidden initially */
+    #mainContent {
+      display: none;
+      height: 100vh;
+      color: #d0aaff;
+      text-shadow: 0 0 5px #d0aaff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Background effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 200%;
+      width: 200%;
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 0, 255, 0.05) 0deg 1deg,
+        rgba(0, 255, 255, 0.05) 1deg 2deg,
+        rgba(255, 255, 0, 0.05) 2deg 3deg,
+        rgba(255, 0, 255, 0.05) 3deg 4deg
+      );
+      background-size: 4px 4px;
+      animation: scrollRGB 20s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes scrollRGB {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-50%, -50%); }
+    }
+
+    h1 {
+      animation: textFlicker 1s infinite alternate;
+      font-size: 3rem;
+      letter-spacing: 1.5rem; /* big spacing for monospace effect */
+      font-family: 'PerfectDOS', monospace;
+      white-space: nowrap;
+      user-select: none;
+      margin: 1rem;
+    }
+
+    /* Make spaces fixed width with non-breaking spaces */
+    h1 span.space {
+      letter-spacing: 0;
+      width: 1.5rem;
+      display: inline-block;
+    }
+
+    a {
+      color: #d0aaff;
+      text-decoration: underline;
+    }
+
+    @keyframes textFlicker {
+      0% { opacity: 1; text-shadow: 0 0 5px #d0aaff; }
+      100% { opacity: 0.95; text-shadow: 0 0 7px #d0aaff, 0 0 10px #d0aaff; }
+    }
+  </style>
+</head>
+<body>
+  <div id="enterScreen">ENTER</div>
+
+  <div id="mainContent">
+    <h1 id="animatedTitle"></h1>
+    <p>Full-time dark magic engineer from northen mongolia.</p>
+    <p><a href="https://instagram.com/arks.925" target="_blank" rel="noopener noreferrer">IG</a> <a href="https://discord.com/users/1093917070414069902">DC</a>.</p>
+  </div>
+
+  <audio id="bgAudio" src="bg.mp3" preload="auto"></audio>
+
+  <script>
+    const enterScreen = document.getElementById('enterScreen');
+    const mainContent = document.getElementById('mainContent');
+    const bgAudio = document.getElementById('bgAudio');
+    const animatedTitle = document.getElementById('animatedTitle');
+
+    // Letters allowed in the decrypt animation
+    const letters = ['A', 'R', 'K', 'S'];
+    // Final text with spaces; space will be handled separately
+    const finalTitle = ['A', ' ', 'R', ' ', 'K', ' ', 'S'];
+    // Array to hold current letters or spaces
+    let currentTitle = [' ', ' ', ' ', ' ', ' ', ' ', ' '];
+    // Lock array to track which letters have settled
+    let locked = [false, false, false, false, false, false, false];
+    let pos = 0;
+    let animInterval;
+
+    function getRandomLetter() {
+      return letters[Math.floor(Math.random() * letters.length)];
+    }
+
+    // Render the currentTitle array as spans for spacing
+    function renderTitle() {
+      let html = '';
+      for (let i = 0; i < currentTitle.length; i++) {
+        if (finalTitle[i] === ' ') {
+          // Non-breaking space span for stable spacing
+          html += `<span class="space">&nbsp;</span>`;
+        } else {
+          html += `<span>${currentTitle[i]}</span>`;
+        }
+      }
+      animatedTitle.innerHTML = html;
+    }
+
+    function updateAnimation() {
+      for (let i = 0; i < finalTitle.length; i++) {
+        if (finalTitle[i] === ' ') {
+          currentTitle[i] = '\u00A0'; // non-breaking space
+          locked[i] = true;
+          continue;
+        }
+        if (!locked[i]) {
+          currentTitle[i] = getRandomLetter();
+        }
+      }
+
+      // lock one letter at a time to final
+      if (pos < finalTitle.length && finalTitle[pos] !== ' ') {
+        if (!locked[pos] && Math.random() < 0.15) {
+          currentTitle[pos] = finalTitle[pos];
+          locked[pos] = true;
+          pos++;
+          while (pos < finalTitle.length && finalTitle[pos] === ' ') {
+            locked[pos] = true;
+            currentTitle[pos] = '\u00A0';
+            pos++;
+          }
+          if (pos >= finalTitle.length) {
+            // Animation complete - set final text and stop interval
+            for (let i = 0; i < finalTitle.length; i++) {
+              currentTitle[i] = finalTitle[i] === ' ' ? '\u00A0' : finalTitle[i];
+            }
+            clearInterval(animInterval);
+          }
+        }
+      }
+
+      // Update document title with no spans (plain spaced string)
+      document.title = currentTitle.map(c => c === '\u00A0' ? ' ' : c).join('');
+
+      renderTitle();
+    }
+
+    enterScreen.addEventListener('click', () => {
+      enterScreen.style.display = 'none';
+      mainContent.style.display = 'flex';
+
+      bgAudio.volume = 0.25;
+      bgAudio.play().catch(() => {
+        console.log('Audio play failed due to autoplay policy.');
+      });
+
+      // Start decrypting animation for title and h1
+      animInterval = setInterval(updateAnimation, 100);
+    });
+  </script>
+</body>
+</html>
