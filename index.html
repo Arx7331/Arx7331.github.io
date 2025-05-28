@@ -159,7 +159,10 @@
       </div>
     </div>
   </div>
-  <audio id="bgAudio" src="bg.mp3" preload="auto"></audio>
+  
+  <!-- Audio element without fixed src -->
+  <audio id="bgAudio" preload="auto"></audio>
+
   <script>
     const enterScreen = document.getElementById('enterScreen');
     const mainContent = document.getElementById('mainContent');
@@ -172,6 +175,13 @@
     let locked = [false, false, false, false, false, false, false];
     let pos = 0;
     let animInterval;
+
+    // List of your mp3 files — replace with your actual files!
+    const songs = [
+      'bg1.mp3',
+      'bg2.mp3',
+      'bg3.mp3'
+    ];
 
     function getRandomLetter() {
       return letters[Math.floor(Math.random() * letters.length)];
@@ -232,6 +242,9 @@
         mainContent.classList.remove('flicker');
       }, 1000);
 
+      // Choose a random song from the list
+      const randomSong = songs[Math.floor(Math.random() * songs.length)];
+      bgAudio.src = randomSong;
       bgAudio.volume = 0.25;
       bgAudio.play().catch(() => {
         console.log('Audio play failed due to autoplay policy.');
