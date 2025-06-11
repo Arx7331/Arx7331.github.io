@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>........</title>
+  <style>
+    @font-face {
+      font-family: 'PerfectDOS';
+      src: url('https://fauux.neocities.org/perfectdosvga437-webfont.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      font-family: 'PerfectDOS', monospace;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    #enterScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #d0aaff;
+      font-size: 3rem;
+      cursor: pointer;
+      user-select: none;
+      text-shadow: 0 0 10px #d0aaff;
+      animation: textFlicker 1.5s infinite alternate;
+      z-index: 1000;
+    }
+
+    #mainContent {
+      display: none;
+      height: 100vh;
+      color: #d0aaff;
+      text-shadow: 0 0 5px #d0aaff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+      filter: contrast(1.2) brightness(0.95) saturate(1.1);
+      overflow: hidden;
+    }
+
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Scanlines */
+    body::before {
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(120, 0, 180, 0.08) 0px,
+        rgba(120, 0, 180, 0.08) 4px,
+        transparent 4px,
+        transparent 8px
+      );
+      animation: scanlines 0.1s linear infinite;
+    }
+
+    /* VHS-style chromatic aberration */
+    body::after {
+      background: none;
+      mix-blend-mode: screen;
+      box-shadow: 0 0 0 2px red, 0 0 0 4px green, 0 0 0 6px blue;
+      transform: scale(1.01);
+      opacity: 0.05;
+    }
+
+    /* CRT curvature */
+    #crtWrapper {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 800px;
+      overflow: hidden;
+    }
+
+    #crtScreen {
+      transform: scale(1.02) rotateX(8deg) rotateY(3deg);
+      border-radius: 30px;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    @keyframes scanlines {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(4px); }
+    }
+
+    @keyframes screenFlicker {
+      0%, 100% { opacity: 1; }
+      20% { opacity: 0.6; }
+      40% { opacity: 0.3; }
+      60% { opacity: 0.7; }
+      80% { opacity: 0.5; }
+    }
+
+    .flicker {
+      animation: screenFlicker 0.5s ease-in-out;
+    }
+
+    h1 {
+      animation: textFlicker 1s infinite alternate;
+      font-size: 3rem;
+      letter-spacing: 1.5rem;
+      font-family: 'PerfectDOS', monospace;
+      white-space: nowrap;
+      user-select: none;
+      margin: 1rem;
+    }
+
+    h1 span.space {
+      letter-spacing: 0;
+      width: 1.5rem;
+      display: inline-block;
+    }
+
+    a {
+      color: #d0aaff;
+      text-decoration: underline;
+    }
+
+    @keyframes textFlicker {
+      0% { opacity: 1; text-shadow: 0 0 5px #d0aaff; }
+      100% { opacity: 0.95; text-shadow: 0 0 7px #d0aaff, 0 0 10px #d0aaff; }
+    }
+  </style>
+</head>
+<body>
+  <div id="enterScreen">ENTER</div>
+  <div id="crtWrapper">
+    <div id="crtScreen">
+      <div id="mainContent">
+        <h1 id="animatedTitle"></h1>
+        <p>Full-time dark magic engineer from northen mongolia.</p>
+        <p><a href="https://instagram.com/arks.925" target="_blank" rel="noopener noreferrer">IG</a> <a href="https://discord.com/users/513509462103818256">DC</a>.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Audio element without fixed src -->
+  <audio id="bgAudio" preload="auto"></audio>
+
+  <script>
+    const enterScreen = document.getElementById('enterScreen');
+    const mainContent = document.getElementById('mainContent');
+    const bgAudio = document.getElementById('bgAudio');
+    const animatedTitle = document.getElementById('animatedTitle');
+
+    const letters = ['A', 'R', 'K', 'S'];
+    const finalTitle = ['A', ' ', 'R', ' ', 'K', ' ', 'S'];
+    let currentTitle = [' ', ' ', ' ', ' ', ' ', ' ', ' '];
+    let locked = [false, false, false, false, false, false, false];
+    let pos = 0;
+    let animInterval;
+
+    // List of your mp3 files — replace with your actual files!
+    const songs = [
+      'bg1.mp3',
+      'bg2.mp3',
+      'bg3.mp3'
+    ];
+
+    function getRandomLetter() {
+      return letters[Math.floor(Math.random() * letters.length)];
+    }
+
+    function renderTitle() {
+      let html = '';
+      for (let i = 0; i < currentTitle.length; i++) {
+        if (finalTitle[i] === ' ') {
+          html += `<span class="space">&nbsp;</span>`;
+        } else {
+          html += `<span>${currentTitle[i]}</span>`;
+        }
+      }
+      animatedTitle.innerHTML = html;
+    }
+
+    function updateAnimation() {
+      for (let i = 0; i < finalTitle.length; i++) {
+        if (finalTitle[i] === ' ') {
+          currentTitle[i] = '\u00A0';
+          locked[i] = true;
+          continue;
+        }
+        if (!locked[i]) {
+          currentTitle[i] = getRandomLetter();
+        }
+      }
+
+      if (pos < finalTitle.length && finalTitle[pos] !== ' ') {
+        if (!locked[pos] && Math.random() < 0.15) {
+          currentTitle[pos] = finalTitle[pos];
+          locked[pos] = true;
+          pos++;
+          while (pos < finalTitle.length && finalTitle[pos] === ' ') {
+            locked[pos] = true;
+            currentTitle[pos] = '\u00A0';
+            pos++;
+          }
+          if (pos >= finalTitle.length) {
+            for (let i = 0; i < finalTitle.length; i++) {
+              currentTitle[i] = finalTitle[i] === ' ' ? '\u00A0' : finalTitle[i];
+            }
+            clearInterval(animInterval);
+          }
+        }
+      }
+
+      document.title = currentTitle.map(c => c === '\u00A0' ? ' ' : c).join('');
+      renderTitle();
+    }
+
+    enterScreen.addEventListener('click', () => {
+      enterScreen.style.display = 'none';
+      mainContent.style.display = 'flex';
+      mainContent.classList.add('flicker');
+      setTimeout(() => {
+        mainContent.classList.remove('flicker');
+      }, 1000);
+
+      // Choose a random song from the list
+      const randomSong = songs[Math.floor(Math.random() * songs.length)];
+      bgAudio.src = randomSong;
+      bgAudio.volume = 0.25;
+      bgAudio.play().catch(() => {
+        console.log('Audio play failed due to autoplay policy.');
+      });
+
+      animInterval = setInterval(updateAnimation, 100);
+    });
+  </script>
+</body>
+</html>

